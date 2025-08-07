@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/lib/auth";
+import ThemeToggle from "@/app/components/theme/ThemeToggle";
 
 export default async function SiteHeader() {
   const session = await getServerSession(authOptions);
@@ -19,6 +20,7 @@ export default async function SiteHeader() {
               <Link href="/auth/sign-up" className="rounded-md px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white">Sign up</Link>
             </>
           )}
+          <ThemeToggle />
         </nav>
       </div>
     </header>

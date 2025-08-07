@@ -1,6 +1,14 @@
 @import "tailwindcss";
 
 :root {
+  --background: #f7f7fb;
+  --foreground: #0b0b10;
+  --accent: #4f46e5;
+  --accent-2: #06b6d4;
+  --muted: #5b5b6b;
+}
+
+[data-theme="dark"] {
   --background: #0b0b10;
   --foreground: #e6e6f0;
   --accent: #6d7cff;
@@ -16,9 +24,9 @@
 }
 
 body {
-  background: radial-gradient(1200px 800px at 10% -10%, #0f1a3a 0%, transparent 60%),
-    radial-gradient(1000px 700px at 110% -20%, #092a2f 0%, transparent 60%),
-    linear-gradient(180deg, #0b0b10 0%, #0b0b10 100%);
+  background: radial-gradient(1200px 800px at 10% -10%, color-mix(in oklab, var(--accent) 20%, transparent) 0%, transparent 60%),
+    radial-gradient(1000px 700px at 110% -20%, color-mix(in oklab, var(--accent-2) 20%, transparent) 0%, transparent 60%),
+    linear-gradient(180deg, var(--background) 0%, var(--background) 100%);
   color: var(--foreground);
   font-family: var(--font-geist-sans), ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
 }
