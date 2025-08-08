@@ -6,11 +6,24 @@ export async function GET(req: Request) {
   const type = searchParams.get("type") as "RENT" | "SALE" | null;
   const county = searchParams.get("county");
   const q = searchParams.get("q");
+  const minPrice = searchParams.get("minPrice");
+  const maxPrice = searchParams.get("maxPrice");
+  const beds = searchParams.get("beds");
+  const idsParam = searchParams.get("ids");
 
   const where: Record<string, unknown> = {};
+  if (idsParam) {
+    const ids = idsParam.split(",").map((s) => s.trim()).filter(Boolean);
+    if (ids.length) where.id = { in: ids };
+  }
   if (type) where.type = type;
   if (county) where.county = county;
   if (q) where.OR = [{ title: { contains: q, mode: "insensitive" } }, { town: { contains: q, mode: "insensitive" } }];
+  if (minPrice || maxPrice) where.price = {
+    gte: minPrice ? Number(minPrice) : undefined,
+    lte: maxPrice ? Number(maxPrice) : undefined,
+  };
+  if (beds) where.bedrooms = { gte: Number(beds) };
 
   const listings = await prisma.listing.findMany({
     where,

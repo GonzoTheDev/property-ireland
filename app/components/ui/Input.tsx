@@ -6,7 +6,7 @@ export default function Input(props: InputHTMLAttributes<HTMLInputElement>) {
     <input
       {...props}
       className={clsx(
-        "w-full h-10 px-3 rounded-md bg-white/5 border border-white/10 text-white placeholder:text-[var(--muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]",
+        "w-full h-11 px-3 rounded-md bg-background/60 border border-foreground/10 text-foreground placeholder:text-[var(--muted)] focus:outline-none focus:ring-4 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] transition-shadow",
         props.className,
       )}
     />

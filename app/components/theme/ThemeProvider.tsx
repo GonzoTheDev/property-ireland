@@ -2,7 +2,7 @@
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 
-type ThemePreference = "auto" | "light" | "dark";
+type ThemePreference = "system" | "light" | "dark";
 type EffectiveTheme = "light" | "dark";
 
 type ThemeContextValue = {
@@ -13,38 +13,46 @@ type ThemeContextValue = {
 
 const ThemeContext = createContext<ThemeContextValue | null>(null);
 
-function computeAutoTheme(now: Date = new Date()): EffectiveTheme {
-  // Simple heuristic: day 07:00-19:00 local time is light, otherwise dark
-  const hour = now.getHours();
-  return hour >= 7 && hour < 19 ? "light" : "dark";
+function computeSystemTheme(): EffectiveTheme {
+  if (typeof window === "undefined") return "light";
+  return window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
 }
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [preference, setPreference] = useState<ThemePreference>("auto");
+  const [preference, setPreference] = useState<ThemePreference>("system");
   const [theme, setTheme] = useState<EffectiveTheme>("dark");
 
   // Load saved preference
   useEffect(() => {
     const saved = typeof window !== "undefined" ? (localStorage.getItem("theme-preference") as ThemePreference | null) : null;
-    setPreference(saved ?? "auto");
+    setPreference(saved ?? "system");
   }, []);
 
   // Apply theme + keep in sync with auto mode
   useEffect(() => {
     function apply(t: EffectiveTheme) {
-      document.documentElement.setAttribute("data-theme", t);
+      const root = document.documentElement;
+      // Smooth theme transition
+      root.style.transition = "background-color 200ms ease, color 200ms ease";
+      root.setAttribute("data-theme", t);
       setTheme(t);
+      // Remove transition after it runs to avoid affecting other animations
+      window.setTimeout(() => {
+        root.style.transition = "";
+      }, 250);
     }
 
-    if (preference === "auto") {
-      const current = computeAutoTheme();
+    if (preference === "system") {
+      const current = computeSystemTheme();
       apply(current);
-      // Recompute roughly every 15 minutes
-      const id = setInterval(() => apply(computeAutoTheme()), 15 * 60 * 1000);
-      return () => clearInterval(id);
-    } else {
-      apply(preference);
+      // React to OS preference changes
+      const mq = window.matchMedia("(prefers-color-scheme: dark)");
+      const handler = () => apply(mq.matches ? "dark" : "light");
+      mq.addEventListener?.("change", handler);
+      return () => mq.removeEventListener?.("change", handler);
     }
+
+    apply(preference);
   }, [preference]);
 
   const setPref = useCallback((pref: ThemePreference) => {
