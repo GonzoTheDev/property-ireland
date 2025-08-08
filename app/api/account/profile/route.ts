@@ -1,27 +1,26 @@
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/lib/auth";
-import { prisma } from "@/app/lib/prisma";
+import { createSupabaseRouteClient } from "@/app/lib/supabaseServer";
 
 export async function GET() {
-  const session = await getServerSession(authOptions);
-  const userId = session?.user?.id;
-  if (!userId) return NextResponse.json({ error: "Unauthorised" }, { status: 401 });
-  const profile = await prisma.profile.findUnique({ where: { userId } });
-  return NextResponse.json(profile ?? {});
+  const supabase = createSupabaseRouteClient();
+  const { data: session } = await supabase.auth.getSession();
+  const user = session.session?.user ?? null;
+  if (!user) return NextResponse.json({ error: "Unauthorised" }, { status: 401 });
+  const { data, error } = await supabase.from("profiles").select("*").eq("user_id", user.id).single();
+  if (error && error.code !== "PGRST116") return NextResponse.json({ error: error.message }, { status: 400 });
+  return NextResponse.json(data ?? {});
 }
 
 export async function POST(req: Request) {
-  const session = await getServerSession(authOptions);
-  const userId = session?.user?.id;
-  if (!userId) return NextResponse.json({ error: "Unauthorised" }, { status: 401 });
-  const data = await req.json();
-  const updated = await prisma.profile.upsert({
-    where: { userId },
-    update: data,
-    create: { ...data, userId },
-  });
-  return NextResponse.json(updated);
+  const supabase = createSupabaseRouteClient();
+  const { data: session } = await supabase.auth.getSession();
+  const user = session.session?.user ?? null;
+  if (!user) return NextResponse.json({ error: "Unauthorised" }, { status: 401 });
+  const payload = await req.json();
+  const upsert = { ...payload, user_id: user.id };
+  const { data, error } = await supabase.from("profiles").upsert(upsert, { onConflict: "user_id" }).select("*").single();
+  if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+  return NextResponse.json(data);
 }
 
 

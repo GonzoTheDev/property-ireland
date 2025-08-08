@@ -4,6 +4,11 @@ const nextConfig: NextConfig = {
   experimental: {
     serverActions: { bodySizeLimit: "2mb" },
   },
+  images: {
+    remotePatterns: [
+      { protocol: "https", hostname: "placehold.co" },
+    ],
+  },
 };
 
 export default nextConfig;

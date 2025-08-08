@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import Image from "next/image";
 import { BedDouble, Bath, MapPin, Image as ImageIcon } from "lucide-react";
+import ContactOwner from "@/app/components/ContactOwner";
 import { getBaseUrl } from "@/app/lib/serverUrl";
 
 async function fetchListing(id: string) {
@@ -52,9 +53,7 @@ export default async function ListingDetailPage({ params }: { params: Promise<{ 
               <span className="sr-only">Map preview placeholder</span>
             </div>
           </div>
-          <div className="card p-4">
-            <button className="w-full h-11 rounded-md bg-[var(--accent)] text-white font-medium">Contact agent</button>
-          </div>
+          <ContactOwner listingId={id} />
         </aside>
       </div>
     </div>

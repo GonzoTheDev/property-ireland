@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { supabase } from "@/app/lib/supabaseClient";
 
 export default function SignUpPage() {
   const [name, setName] = useState("");
@@ -15,17 +16,9 @@ export default function SignUpPage() {
     e.preventDefault();
     setLoading(true);
     setError(null);
-    const res = await fetch("/api/auth/sign-up", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, email, password }),
-    });
-    if (!res.ok) {
-      const data = await res.json().catch(() => ({}));
-      setError(data?.error ?? "Failed to sign up");
-    } else {
-      router.push("/auth/sign-in");
-    }
+    const { error } = await supabase.auth.signUp({ email, password, options: { data: { name } } });
+    if (error) setError(error.message);
+    else router.push("/");
     setLoading(false);
   }
 
@@ -65,9 +58,7 @@ export default function SignUpPage() {
             className="w-full border rounded px-3 py-2 bg-transparent"
           />
         </div>
-        <button disabled={loading} className="w-full h-10 rounded bg-foreground text-background">
-          {loading ? "Creating..." : "Create account"}
-        </button>
+        <button disabled={loading} className="w-full h-10 rounded bg-foreground text-background">{loading ? "Creating..." : "Create account"}</button>
       </form>
     </div>
   );

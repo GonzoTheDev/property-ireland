@@ -1,7 +1,7 @@
 "use client";
 
-import { signIn } from "next-auth/react";
 import { useState } from "react";
+import { supabase } from "@/app/lib/supabaseClient";
 
 export default function SignInPage() {
   const [email, setEmail] = useState("");
@@ -13,7 +13,8 @@ export default function SignInPage() {
     e.preventDefault();
     setLoading(true);
     setError(null);
-    await signIn("credentials", { email, password, callbackUrl: "/", redirect: true });
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) setError(error.message);
     setLoading(false);
   }
 
@@ -46,6 +47,10 @@ export default function SignInPage() {
           {loading ? "Signing in..." : "Sign in"}
         </button>
       </form>
+      <div className="mt-4 grid gap-2">
+        <button onClick={() => supabase.auth.signInWithOAuth({ provider: "google" })} className="h-10 rounded bg-foreground/10 hover:bg-foreground/20">Continue with Google</button>
+        <button onClick={() => supabase.auth.signInWithOAuth({ provider: "facebook" })} className="h-10 rounded bg-foreground/10 hover:bg-foreground/20">Continue with Facebook</button>
+      </div>
     </div>
   );
 }

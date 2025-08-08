@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/app/lib/prisma";
+import { createSupabaseRouteClient } from "@/app/lib/supabaseServer";
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
@@ -11,61 +11,29 @@ export async function GET(req: Request) {
   const beds = searchParams.get("beds");
   const idsParam = searchParams.get("ids");
 
-  const where: Record<string, unknown> = {};
+  const supabase = createSupabaseRouteClient();
+  let query = supabase
+    .from("listings")
+    .select("*, images:listings_images(*)")
+    .order("created_at", { ascending: false })
+    .limit(50);
+
   if (idsParam) {
     const ids = idsParam.split(",").map((s) => s.trim()).filter(Boolean);
-    if (ids.length) where.id = { in: ids };
+    if (ids.length) query = query.in("id", ids);
   }
-  if (type) where.type = type;
-  if (county) where.county = county;
-  if (q) where.OR = [{ title: { contains: q, mode: "insensitive" } }, { town: { contains: q, mode: "insensitive" } }];
-  if (minPrice || maxPrice) where.price = {
-    gte: minPrice ? Number(minPrice) : undefined,
-    lte: maxPrice ? Number(maxPrice) : undefined,
-  };
-  if (beds) where.bedrooms = { gte: Number(beds) };
+  if (type) query = query.eq("type", type);
+  if (county) query = query.eq("county", county);
+  if (q) query = query.or(`title.ilike.%${q}%,town.ilike.%${q}%`);
+  if (minPrice) query = query.gte("price", Number(minPrice));
+  if (maxPrice) query = query.lte("price", Number(maxPrice));
+  if (beds) query = query.gte("bedrooms", Number(beds));
 
-  const listings = await prisma.listing.findMany({
-    where,
-    include: { images: true, user: { select: { id: true, name: true } } },
-    orderBy: { createdAt: "desc" },
-    take: 50,
-  });
-  return NextResponse.json(listings);
+  const { data, error } = await query;
+  if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+  return NextResponse.json(data ?? []);
 }
 
-export async function POST(req: Request) {
-  try {
-    const data = await req.json();
-    const listing = await prisma.listing.create({
-      data: {
-        title: data.title,
-        description: data.description,
-        type: data.type,
-        price: data.price,
-        bedrooms: data.bedrooms,
-        bathrooms: data.bathrooms,
-        areaSqM: data.areaSqM ?? null,
-        furnished: data.furnished ?? null,
-        addressLine1: data.addressLine1,
-        addressLine2: data.addressLine2 ?? null,
-        town: data.town,
-        county: data.county,
-        eircode: data.eircode ?? null,
-        latitude: data.latitude ?? null,
-        longitude: data.longitude ?? null,
-        amenities: data.amenities ?? [],
-        userId: data.userId,
-        images: data.images?.length
-          ? { createMany: { data: data.images.map((u: string, i: number) => ({ url: u, orderIndex: i })) } }
-          : undefined,
-      },
-      include: { images: true },
-    });
-    return NextResponse.json(listing);
-  } catch {
-    return NextResponse.json({ error: "Failed to create listing" }, { status: 400 });
-  }
-}
+// Listing creation is handled at /api/account/listings with auth
 
 

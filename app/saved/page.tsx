@@ -9,8 +9,8 @@ export default function SavedListingsPage() {
   const [listings, setListings] = useState<Listing[]>([]);
 
   useEffect(() => {
-    function refresh() {
-      setIds(getSavedIds());
+    async function refresh() {
+      setIds(await getSavedIds());
     }
     refresh();
     const handler = () => refresh();

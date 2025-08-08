@@ -1,14 +1,19 @@
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/lib/auth";
-import { prisma } from "@/app/lib/prisma";
 import Link from "next/link";
 import Button from "@/app/components/ui/Button";
+import { createSupabaseServerComponentClient } from "@/app/lib/supabaseServer";
 
 
 export default async function MyListingsPage() {
-  const session = await getServerSession(authOptions);
-  if (!session?.user?.id) return <div className="py-8">Please sign in.</div>;
-  const listings = await prisma.listing.findMany({ where: { userId: session.user.id }, orderBy: { createdAt: "desc" } });
+  const supabase = createSupabaseServerComponentClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return <div className="py-8">Please sign in.</div>;
+  const { data: listings } = await supabase
+    .from("listings")
+    .select("id,title,town,county")
+    .eq("user_id", user.id)
+    .order("created_at", { ascending: false });
   return (
     <div className="py-8 space-y-4">
       <div className="flex items-center justify-between">
@@ -18,7 +23,7 @@ export default async function MyListingsPage() {
         </Button>
       </div>
       <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {listings.map((l) => (
+        {(listings ?? []).map((l: { id: string; title: string; town: string; county: string }) => (
           <Link key={l.id} href={`/listings/${l.id}`} className="card p-4 glow">
             <div className="font-medium">{l.title}</div>
             <div className="text-sm text-[var(--muted)]">{l.town}, {l.county}</div>

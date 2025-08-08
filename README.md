@@ -1,28 +1,25 @@
-Property Ireland — property listings for rent and sale in Ireland, built with Next.js App Router, Prisma, and NextAuth.
+Property Ireland — property listings for rent and sale in Ireland, built with Next.js App Router and Supabase (Auth, Postgres, Edge Functions).
 
 ## Getting Started
 
 Local development
 
-1. Install dependencies and generate Prisma client:
+1. Install dependencies:
 
 ```
 npm install
-npx prisma generate
 ```
 
-2. Create `.env`:
+2. Create `.env.local`:
 
 ```
-DATABASE_URL="file:./dev.db"
-NEXTAUTH_SECRET="change-me"
-NEXTAUTH_URL="http://localhost:3000"
+NEXT_PUBLIC_SUPABASE_URL="https://YOUR_PROJECT_ID.supabase.co"
+NEXT_PUBLIC_SUPABASE_ANON_KEY="your-anon-key"
 ```
 
-3. Apply migrations and start dev server:
+3. Start dev server:
 
 ```
-npx prisma migrate dev --name init
 npm run dev
 ```
 
@@ -34,7 +31,7 @@ This project uses [`next/font`](https://nextjs.org/docs/app/building-your-applic
 
 Auth
 
-- Email/password via credentials provider (MVP). Social providers can be added later.
+- Supabase Auth (email/password, Google, Facebook). Configure providers in Supabase dashboard.
 
 Legal
 

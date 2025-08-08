@@ -1,7 +1,9 @@
-import NextAuth from "next-auth";
-import { authOptions } from "@/app/lib/auth";
-
-const handler = NextAuth(authOptions);
-export { handler as GET, handler as POST };
+// NextAuth removed during Supabase migration.
+export async function GET() {
+  return new Response("Not implemented", { status: 501 });
+}
+export async function POST() {
+  return new Response("Not implemented", { status: 501 });
+}
 
 

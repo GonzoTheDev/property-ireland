@@ -25,12 +25,12 @@ export default function ListingCard({ listing }: ListingCardProps) {
   const [isSaved, setIsSaved] = useState<boolean>(false);
 
   useEffect(() => {
-    setIsSaved(initialIsSaved(listing.id));
+    initialIsSaved(listing.id).then(setIsSaved);
   }, [listing.id]);
 
-  function onToggleSave(e: React.MouseEvent) {
+  async function onToggleSave(e: React.MouseEvent) {
     e.preventDefault();
-    const saved = toggleSaved(listing.id);
+    const saved = await toggleSaved(listing.id);
     setIsSaved(saved);
   }
   return (
