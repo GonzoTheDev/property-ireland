@@ -3,13 +3,11 @@ import { createRouteHandlerClient, createServerComponentClient } from "@supabase
 import type { Database } from "@/app/types/supabase";
 
 export function createSupabaseRouteClient() {
-  const cookieStore = cookies();
-  return createRouteHandlerClient<Database>({ cookies: () => cookieStore });
+  return createRouteHandlerClient<Database>({ cookies });
 }
 
 export function createSupabaseServerComponentClient() {
-  const cookieStore = cookies();
-  return createServerComponentClient<Database>({ cookies: () => cookieStore });
+  return createServerComponentClient<Database>({ cookies });
 }
 
 

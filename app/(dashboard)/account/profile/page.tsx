@@ -22,11 +22,15 @@ export default function ProfilePage() {
 
   async function save() {
     setSaving(true);
-    await fetch("/api/account/profile", {
+    const res = await fetch("/api/account/profile", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(profile),
     });
+    if (res.ok) {
+      const latest = await fetch("/api/account/profile").then((r) => r.json());
+      setProfile(latest);
+    }
     setSaving(false);
   }
 

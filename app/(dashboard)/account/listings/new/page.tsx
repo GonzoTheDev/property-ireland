@@ -69,7 +69,7 @@ export default function NewListingPage() {
         Array.from(files).map(async (file, index) => {
           const ext = file.name.split(".").pop() ?? "jpg";
           const path = `${uid}/${Date.now()}_${index}.${ext}`;
-          const { error: upErr } = await supabase.storage.from("listing-images").upload(path, file, { upsert: true, cacheControl: "3600" });
+          const { error: upErr } = await supabase.storage.from("listing-images").upload(path, file, { upsert: false, cacheControl: "3600" });
           if (upErr) {
             console.error("[Upload] Error uploading", { path, message: upErr.message });
             throw upErr;

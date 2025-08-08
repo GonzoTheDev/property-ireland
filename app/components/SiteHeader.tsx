@@ -23,8 +23,11 @@ export default function SiteHeader() {
             <div className="flex items-center gap-3">
               <Link href="/account/profile" className="hover:text-foreground">Account</Link>
               <button
-                onClick={() => supabase.auth.signOut()}
-                className="rounded-md px-3 py-1.5 bg-foreground/10 hover:bg-foreground/20 text-foreground"
+                onClick={async () => {
+                  await supabase.auth.signOut();
+                  window.location.href = "/auth/sign-in";
+                }}
+                className="rounded-md px-3 py-1.5 bg-foreground/10 hover:bg-red-500/10 hover:text-red-500 text-foreground cursor-pointer"
               >
                 Log out
               </button>

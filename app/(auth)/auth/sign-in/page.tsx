@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { supabase } from "@/app/lib/supabaseClient";
 
 export default function SignInPage() {
@@ -8,6 +9,7 @@ export default function SignInPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const router = useRouter();
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -15,6 +17,12 @@ export default function SignInPage() {
     setError(null);
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) setError(error.message);
+    else {
+      // Ensure session cookie is refreshed for SSR/API via middleware
+      await supabase.auth.getSession();
+      router.push("/");
+      router.refresh();
+    }
     setLoading(false);
   }
 

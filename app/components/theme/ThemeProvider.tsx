@@ -2,7 +2,7 @@
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 
-type ThemePreference = "system" | "light" | "dark";
+type ThemePreference = "light" | "dark";
 type EffectiveTheme = "light" | "dark";
 
 type ThemeContextValue = {
@@ -13,19 +13,16 @@ type ThemeContextValue = {
 
 const ThemeContext = createContext<ThemeContextValue | null>(null);
 
-function computeSystemTheme(): EffectiveTheme {
-  if (typeof window === "undefined") return "light";
-  return window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
-}
-
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [preference, setPreference] = useState<ThemePreference>("system");
+  const [preference, setPreference] = useState<ThemePreference>("light");
   const [theme, setTheme] = useState<EffectiveTheme>("dark");
 
   // Load saved preference
   useEffect(() => {
-    const saved = typeof window !== "undefined" ? (localStorage.getItem("theme-preference") as ThemePreference | null) : null;
-    setPreference(saved ?? "system");
+    const raw = typeof window !== "undefined" ? (localStorage.getItem("theme-preference") as string | null) : null;
+    // Backwards-compat: map old "system" to light by default
+    const mapped = raw === "dark" || raw === "light" ? (raw as ThemePreference) : "light";
+    setPreference(mapped);
   }, []);
 
   // Apply theme + keep in sync with auto mode
@@ -40,16 +37,6 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       window.setTimeout(() => {
         root.style.transition = "";
       }, 250);
-    }
-
-    if (preference === "system") {
-      const current = computeSystemTheme();
-      apply(current);
-      // React to OS preference changes
-      const mq = window.matchMedia("(prefers-color-scheme: dark)");
-      const handler = () => apply(mq.matches ? "dark" : "light");
-      mq.addEventListener?.("change", handler);
-      return () => mq.removeEventListener?.("change", handler);
     }
 
     apply(preference);
